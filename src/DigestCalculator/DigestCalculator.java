@@ -128,26 +128,55 @@ public class DigestCalculator {
 	private static void compareDigest(HashMap<String,String> dictionaryOfDigests,
 			HashMap<String,HashMap<String,String>> dictionaryFromListaDigest, String digestType )
 	{
-		System.out.println("--- Compara Digests gerados vs Digests listados");
+		System.out.println("--- Compara Digests gerados vs Digests listados ---");
 		for (Entry<String, String> dictionaryProcessed  : dictionaryOfDigests.entrySet())
 		{
 			String fileName = dictionaryProcessed.getKey();
 			String digest = dictionaryProcessed.getValue();
 			
-			String status = isValidDigest(dictionaryFromListaDigest,fileName,digest);
+			String status = isValidDigest(dictionaryFromListaDigest,fileName,digestType,digest);
 			
             System.out.println(fileName+" "+digestType+" "+digest+" "+status);
 		}
 		System.out.println("---------------------------------------------------");
 	}
 	
-	private static String isValidDigest(HashMap<String,HashMap<String,String>> dictionaryFromListaDigest, String fileName, String digest)
+	private static String isValidDigest(HashMap<String,HashMap<String,String>> dictionaryFromListaDigest, 
+			String fileName, String digestType, String digest)
 	{
+		for (Entry<String,HashMap<String,String>> dictionaryOfDigests  : dictionaryFromListaDigest.entrySet())
+		{
+			if(dictionaryOfDigests.getKey().equalsIgnoreCase(fileName))
+			{
+				String status = searchFileWithDigest(dictionaryOfDigests,digest,digestType);
+				if(status.equals("OK") || status.equals("NOT_OK") )
+					return status;
+			}
+		}
 		
-		
-		return "OK";
+		//tratar colisao
+		return "NOT FOUND";
 	}
 
+	private static String searchFileWithDigest(Entry<String, HashMap<String, String>> dictionaryOfDigests,String digest,String digestType)
+	{
+		System.out.println("Encontrei a chave "+dictionaryOfDigests.getKey());	
+		for(Entry<String, String> dictionary : dictionaryOfDigests.getValue().entrySet())
+		{
+			if(dictionary.getKey().equalsIgnoreCase(digestType))
+			{
+				if(dictionary.getValue().equalsIgnoreCase(digest))
+				{
+					return "OK";
+				}
+				else
+				{
+					return "NOT_OK";
+				}
+			}
+		}
+		return "NOT FOUND";
+	}
 	
 	/*
 	 * Auxiliary Methods
