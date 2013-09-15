@@ -154,10 +154,33 @@ public class DigestCalculator {
 			}
 		}
 		
-		//tratar colisao
+		String status = searchColisionStatus(dictionaryFromListaDigest,fileName,digest);
+		if(status.equals("COLISION"))
+			return status;
+		
 		return "NOT FOUND";
 	}
 
+	private static String searchColisionStatus(HashMap<String,HashMap<String,String>> dictionaryFromListaDigest,
+			String fileName, String digest)
+	{
+		for (Entry<String,HashMap<String,String>> dictionaryOfDigests  : dictionaryFromListaDigest.entrySet())
+		{
+			String arqName = dictionaryOfDigests.getKey();			
+			for(Entry<String, String> dictionary : dictionaryOfDigests.getValue().entrySet())
+			{				
+				if(dictionary.getValue().equalsIgnoreCase(digest))
+				{
+					if(arqName.equalsIgnoreCase(fileName))
+					{
+						return "COLISION";
+					}
+				}
+			}
+		}
+		return "NOT_FOUND";
+	}
+	
 	private static String searchFileWithDigest(Entry<String, HashMap<String, String>> dictionaryOfDigests,String digest,String digestType)
 	{
 		System.out.println("Encontrei a chave "+dictionaryOfDigests.getKey());	
