@@ -17,7 +17,7 @@ public class DigestCalculator {
 		if (args.length < 3)
 		{
 			System.err.println("Numero de parametros incorreto, talvez você quis dizer:\n" +
-					"$ java DigestCalculator <Tipo_Digest> <Caminho_Arq1>[<Caminho_ArqN>] <Caminho_ArqListaDigest>");
+					"$ java DigestCalculator <Tipo_Digest> <Caminho_ArqListaDigest> <Caminho_Arq1>[<Caminho_ArqN>]");
 			System.exit(1);
 		}   
     
