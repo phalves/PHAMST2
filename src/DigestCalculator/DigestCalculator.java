@@ -31,8 +31,12 @@ public class DigestCalculator {
     	HashMap<String,HashMap<String,String>> dictionaryFromListaDigest =
     			parseListaDigestToDictionary(arqListDigestPath);
 
-		dumpDictionaryOfDigestsFromArqListToProcess(dictionaryOfDigests);
-    	dumpDictionaryOfDigestsFromListaDigest(dictionaryFromListaDigest); 
+    	compareDigest(dictionaryOfDigests, dictionaryFromListaDigest, digestType);
+    	
+		//dumpDictionaryOfDigestsFromArqListToProcess(dictionaryOfDigests);
+    	//dumpDictionaryOfDigestsFromListaDigest(dictionaryFromListaDigest); 
+    	
+    	
 	}
 	
 	private static ArrayList<String> getFilePathFromArqListToProcess(String[] args)
@@ -120,6 +124,30 @@ public class DigestCalculator {
 		System.exit(1);
 		return null;
 	}
+	
+	private static void compareDigest(HashMap<String,String> dictionaryOfDigests,
+			HashMap<String,HashMap<String,String>> dictionaryFromListaDigest, String digestType )
+	{
+		System.out.println("--- Compara Digests gerados vs Digests listados");
+		for (Entry<String, String> dictionaryProcessed  : dictionaryOfDigests.entrySet())
+		{
+			String fileName = dictionaryProcessed.getKey();
+			String digest = dictionaryProcessed.getValue();
+			
+			String status = isValidDigest(dictionaryFromListaDigest,fileName,digest);
+			
+            System.out.println(fileName+" "+digestType+" "+digest+" "+status);
+		}
+		System.out.println("---------------------------------------------------");
+	}
+	
+	private static String isValidDigest(HashMap<String,HashMap<String,String>> dictionaryFromListaDigest, String fileName, String digest)
+	{
+		
+		
+		return "OK";
+	}
+
 	
 	/*
 	 * Auxiliary Methods
