@@ -20,13 +20,19 @@ public class DigestCalculator {
 					"$ java DigestCalculator <Tipo_Digest> <Caminho_ArqListaDigest> <Caminho_Arq1>[<Caminho_ArqN>]");
 			System.exit(1);
 		}   
-    
+
     	String digestType = args[0];
+    	String arqListDigestPath = args[1];
+    	
     	ArrayList<String> ArqListFileNamesToProcess = getFilePathFromArqListToProcess(args);
     	
 		HashMap<String,String> dictionaryOfDigests = parseDigestToProcessToDictionary(digestType, ArqListFileNamesToProcess);
 		
+    	HashMap<String,HashMap<String,String>> dictionaryFromListaDigest =
+    			parseListaDigestToDictionary(arqListDigestPath);
+
 		dumpDictionaryOfDigestsFromArqListToProcess(dictionaryOfDigests);
+    	dumpDictionaryOfDigestsFromListaDigest(dictionaryFromListaDigest); 
 	}
 	
 	private static ArrayList<String> getFilePathFromArqListToProcess(String[] args)
@@ -39,9 +45,35 @@ public class DigestCalculator {
 		return listFiles;
 	}
 	
-	private static ArrayList<BufferedReader> parseContentFromArqListaDigest(String[] args)
+	private static HashMap<String,HashMap<String,String>> parseListaDigestToDictionary(String arqListDigestPath)
 	{
-		return null;
+		HashMap<String,HashMap<String,String>> dictionaryFromListaDigest =
+				new HashMap<String,HashMap<String,String>>();
+		try
+		{
+			BufferedReader reader = createFileReader(arqListDigestPath);
+			String line = "";
+			while((line = reader.readLine())!= null)
+			{
+				String[] input = line.split(" ");
+				String fileName = input[0];
+				
+				HashMap<String,String> dictionaryDigest = 
+						new HashMap<String,String>();
+				
+				for(int i = 1; i < input.length; i+=2)
+				{
+					dictionaryDigest.put(input[i], input[i+1]);
+					dictionaryFromListaDigest.put(fileName, dictionaryDigest);
+				}
+			}
+		}
+		catch(Exception e)
+		{
+			System.err.println( "Arquivo não pode ser lido.");
+			System.exit(1);
+		}
+		return dictionaryFromListaDigest;
 	}
 	
 	private static HashMap<String, String>  parseDigestToProcessToDictionary(String digestType, ArrayList<String> arqListToProcess)
@@ -52,8 +84,7 @@ public class DigestCalculator {
 		for(String filePath : arqListToProcess)
 		{
 			String input = calculateDigest(digestType, filePath);
-			String fileName = filePath.substring(filePath.lastIndexOf('/') + 1);
-
+			String fileName = filePath.substring(filePath.lastIndexOf('\\') + 1);
 			dictionaryOfDigestsFromArqListToProcess.put(fileName, input);
 		}
 		
@@ -93,7 +124,7 @@ public class DigestCalculator {
 	/*
 	 * Auxiliary Methods
 	 */
-	private static BufferedReader createFile(String filePath)
+	private static BufferedReader createFileReader(String filePath)
 	{
 		try{
 			BufferedReader reader = new BufferedReader(new FileReader(filePath));
@@ -114,33 +145,25 @@ public class DigestCalculator {
 	
 	public static void dumpDictionaryOfDigestsFromArqListToProcess(HashMap<String,String> dictionaryOfDigestProcessed)
 	{
+		System.out.println("Digest gerados por arquivo:");
 		for (Entry<String, String> dictionaryOfDigests  : dictionaryOfDigestProcessed.entrySet())
 		{
-			System.out.println(dictionaryOfDigests.getKey());
+			System.out.println(dictionaryOfDigests.getKey() + " " + dictionaryOfDigests.getValue());
 			System.out.println();
-			System.out.println(dictionaryOfDigests.getValue());
 		}
 	}
-	
-	private void tempFunc()
+
+	public static void dumpDictionaryOfDigestsFromListaDigest(HashMap<String,HashMap<String,String>> dictionaryFromListaDigest)
 	{
-	/*	String line = "";
-		try{
-			while((line = file.readLine())!= null)
-			{
-				String[] input = line.split(" ");
-				for ( int i = 1 ; i < input.length ; i+=2 )
-				{
-					if (digestType != null || input[i].equals(digestType))
-							dictionaryDigest.put(digestType, input[i+1]);
-				}
-			}
-		}
-		catch(IOException e)
+		System.out.println("--------------");
+		for (Entry<String,HashMap<String,String>> dictionaryOfDigests  : dictionaryFromListaDigest.entrySet())
 		{
-			System.err.println( "Arquivo não pode ser lido.");
-			System.exit(1);
-		}*/
-		
+			System.out.println(dictionaryOfDigests.getKey());
+			for(Entry<String, String> dictionary : dictionaryOfDigests.getValue().entrySet())
+			{
+				System.out.println(dictionary.getKey() + " " + dictionary.getValue());
+			}
+			System.out.println();
+		}
 	}
 }
