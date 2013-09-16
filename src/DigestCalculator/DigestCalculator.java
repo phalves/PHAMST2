@@ -1,7 +1,9 @@
 package DigestCalculator;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -16,7 +18,7 @@ public class DigestCalculator {
 	{
 		if (args.length < 3)
 		{
-			System.err.println("Numero de parametros incorreto, talvez você quis dizer:\n" +
+			System.err.println("Numero de parametros incorreto, talvez voc? quis dizer:\n" +
 					"$ java DigestCalculator <Tipo_Digest> <Caminho_ArqListaDigest> <Caminho_Arq1>[<Caminho_ArqN>]");
 			System.exit(1);
 		}   
@@ -31,7 +33,7 @@ public class DigestCalculator {
     	HashMap<String,HashMap<String,String>> dictionaryFromListaDigest =
     			parseListaDigestToDictionary(arqListDigestPath);
 
-    	compareDigest(dictionaryOfDigests, dictionaryFromListaDigest, digestType);
+    	compareDigest(dictionaryOfDigests, dictionaryFromListaDigest, digestType, arqListDigestPath);
     	
 		//dumpDictionaryOfDigestsFromArqListToProcess(dictionaryOfDigests);
     	//dumpDictionaryOfDigestsFromListaDigest(dictionaryFromListaDigest); 
@@ -74,7 +76,7 @@ public class DigestCalculator {
 		}
 		catch(Exception e)
 		{
-			System.err.println( "Arquivo não pode ser lido.");
+			System.err.println( "Arquivo n?o pode ser lido.");
 			System.exit(1);
 		}
 		return dictionaryFromListaDigest;
@@ -88,7 +90,7 @@ public class DigestCalculator {
 		for(String filePath : arqListToProcess)
 		{
 			String input = calculateDigest(digestType, filePath);
-			String fileName = filePath.substring(filePath.lastIndexOf('\\') + 1);
+			String fileName = filePath.substring(filePath.lastIndexOf('/') + 1);
 			dictionaryOfDigestsFromArqListToProcess.put(fileName, input);
 		}
 		
@@ -115,20 +117,19 @@ public class DigestCalculator {
 		}
 		catch ( IOException e )
 		{
-			System.err.println( "Arquivo " + filePath + " não pode ser lido." );
+			System.err.println( "Arquivo " + filePath + " n?o pode ser lido." );
 		}
 		catch (java.security.NoSuchAlgorithmException e )
 		{
-			System.err.println( "Tipo_Digest " + digestType + " não é reconhecido." );
+			System.err.println( "Tipo_Digest " + digestType + " n?o ? reconhecido." );
 		}
 		System.exit(1);
 		return null;
 	}
 	
 	private static void compareDigest(HashMap<String,String> dictionaryOfDigests,
-			HashMap<String,HashMap<String,String>> dictionaryFromListaDigest, String digestType )
+			HashMap<String,HashMap<String,String>> dictionaryFromListaDigest, String digestType, String arqListDigestPath )
 	{
-		System.out.println("--- Compara Digests gerados vs Digests listados ---");
 		for (Entry<String, String> dictionaryProcessed  : dictionaryOfDigests.entrySet())
 		{
 			String fileName = dictionaryProcessed.getKey();
@@ -136,11 +137,33 @@ public class DigestCalculator {
 			
 			String status = isValidDigest(dictionaryFromListaDigest,fileName,digestType,digest);
 			
-            System.out.println(fileName+" "+digestType+" "+digest+" "+status);
+			if(status.equals("(NOT FOUND)"))
+			{
+				System.out.println(fileName+" "+digestType+" "+digest+" "+status);
+				appendDigestToFileBottom(fileName, digestType, digest, arqListDigestPath);
+			}
+			else{
+				System.out.println(fileName+" "+digestType+" "+digest+" "+status);
+			}
 		}
-		System.out.println("---------------------------------------------------");
 	}
 	
+	private static void appendDigestToFileBottom(String fileName,
+			String digestType, String digest, String arqListDigestPath) {
+		try {
+			FileWriter fw = new FileWriter(arqListDigestPath, true);
+						
+			BufferedWriter out = new BufferedWriter(fw);
+			out.newLine();
+			out.write(fileName +" "+ digestType +" "+ digest +"\n");
+			out.close();
+			
+		} catch(IOException e) {
+			e.printStackTrace();
+		}
+		
+	}
+
 	private static String isValidDigest(HashMap<String,HashMap<String,String>> dictionaryFromListaDigest, 
 			String fileName, String digestType, String digest)
 	{
@@ -149,16 +172,16 @@ public class DigestCalculator {
 			if(dictionaryOfDigests.getKey().equalsIgnoreCase(fileName))
 			{
 				String status = searchFileWithDigest(dictionaryOfDigests,digest,digestType);
-				if(status.equals("OK") || status.equals("NOT_OK") )
+				if(status.equals("(OK)") || status.equals("(NOT OK)") )
 					return status;
 			}
 		}
 		
 		String status = searchColisionStatus(dictionaryFromListaDigest,fileName,digest);
-		if(status.equals("COLISION"))
+		if(status.equals("(COLISION)"))
 			return status;
 		
-		return "NOT FOUND";
+		return "(NOT FOUND)";
 	}
 
 	private static String searchColisionStatus(HashMap<String,HashMap<String,String>> dictionaryFromListaDigest,
@@ -171,9 +194,9 @@ public class DigestCalculator {
 			{				
 				if(dictionary.getValue().equalsIgnoreCase(digest))
 				{
-					if(arqName.equalsIgnoreCase(fileName))
+					if(!arqName.equalsIgnoreCase(fileName))
 					{
-						return "COLISION";
+						return "(COLISION)";
 					}
 				}
 			}
@@ -183,22 +206,21 @@ public class DigestCalculator {
 	
 	private static String searchFileWithDigest(Entry<String, HashMap<String, String>> dictionaryOfDigests,String digest,String digestType)
 	{
-		System.out.println("Encontrei a chave "+dictionaryOfDigests.getKey());	
 		for(Entry<String, String> dictionary : dictionaryOfDigests.getValue().entrySet())
 		{
 			if(dictionary.getKey().equalsIgnoreCase(digestType))
 			{
 				if(dictionary.getValue().equalsIgnoreCase(digest))
 				{
-					return "OK";
+					return "(OK)";
 				}
 				else
 				{
-					return "NOT_OK";
+					return "(NOT OK)";
 				}
 			}
 		}
-		return "NOT FOUND";
+		return "(NOT FOUND)";
 	}
 	
 	/*
@@ -212,7 +234,7 @@ public class DigestCalculator {
 		}
 		catch(Exception error)
 		{
-			System.err.println("ATENCAO: O arquivo " + filePath + " não foi encontrado.");
+			System.err.println("ATENCAO: O arquivo " + filePath + " n?o foi encontrado.");
 			System.exit(1);
 		}
 		return null;
