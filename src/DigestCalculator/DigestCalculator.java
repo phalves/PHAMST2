@@ -12,6 +12,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
+/**
+ * Alunos:
+ * Anderson Moreira #07132843
+ * Paulo Henrique C.Alves #0911325
+ * 
+ * */
+
 public class DigestCalculator {
 	
 	public static void main( String[] args)
@@ -90,7 +97,7 @@ public class DigestCalculator {
 		for(String filePath : arqListToProcess)
 		{
 			String input = calculateDigest(digestType, filePath);
-			String fileName = filePath.substring(filePath.lastIndexOf('/') + 1);
+			String fileName = getFileName(filePath);
 			dictionaryOfDigestsFromArqListToProcess.put(fileName, input);
 		}
 		
@@ -221,6 +228,31 @@ public class DigestCalculator {
 			}
 		}
 		return "(NOT FOUND)";
+	}
+	
+	public static String getFileName(String filePath) {
+
+		int lastIndexOf = checkForUnixAndWindowsPath(filePath);
+
+		if (lastIndexOf == -1) {
+			return filePath;
+		}
+
+		String fileName = filePath.substring(lastIndexOf + 1, filePath.length());
+
+		return fileName;
+	}
+	
+	private static int checkForUnixAndWindowsPath(String filePath) {
+		int lastIndexOf = filePath.lastIndexOf('/');
+
+		if (lastIndexOf == -1) {
+			lastIndexOf = filePath.lastIndexOf('\\');
+			if (lastIndexOf == -1) 		
+				return -1;
+		}
+		
+		return lastIndexOf;
 	}
 	
 	/*
